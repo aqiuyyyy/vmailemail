@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TempInbox - Vmail.dev</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 保持你原来的全部 CSS 样式不变，这里省略以节省空间，直接复制你之前的 <style> ... </style> 部分粘贴在这里 -->
+    <style>
+        /* 请把你原来完整的 <style> 内容粘贴到这里（从 :root 开始到媒体查询结束） */
+        /* ... (你的原 CSS) ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1><i class="fas fa-envelope"></i> TempInbox (Vmail.dev)</h1>
+                <p>快速、安全的临时邮箱服务</p>
+            </div>
+            <div class="content">
+                <!-- 以下 HTML 结构完全保持你原来的不变 -->
+                <div class="email-section">
+                    <div class="email-display" id="email-address">
+                        点击下方按钮生成邮箱
+                        <div class="loader" id="email-loader"></div>
+                    </div>
+                    <div class="account-info" id="account-info"></div>
+                    <div class="error-message" id="email-error"></div>
+                    <div class="success-message" id="email-success"></div>
+                    <div class="actions">
+                        <button class="btn btn-primary" id="generate-btn">
+                            <i class="fas fa-plus-circle"></i> 生成邮箱
+                        </button>
+                        <button class="btn btn-secondary" id="copy-btn">
+                            <i class="fas fa-copy"></i> 复制地址
+                        </button>
+                        <button class="btn btn-refresh" id="refresh-btn">
+                            <i class="fas fa-sync-alt"></i> 手动刷新
+                        </button>
+                        <button class="btn btn-delete" id="delete-account-btn" style="display: none;">
+                            <i class="fas fa-trash"></i> 删除账户
+                        </button>
+                        <button class="btn btn-delete" id="clear-storage-btn" style="display: none;">
+                            <i class="fas fa-eraser"></i> 清除本地数据
+                        </button>
+                    </div>
+                </div>
+                <!-- 收件箱、邮件详情等部分保持完全一样 -->
+                <!-- ... (你原来的 inbox-section、email-detail 等全部 HTML) ... -->
+            </div>
+            <div class="footer">
+                <p>我的临时邮箱服务 • 邮件由 <a href="https://vmail.dev" target="_blank">Vmail.dev</a> 提供，自动销毁</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmail = '';
+        let apiKey = 'vmail_0T6OOdjA6VhmYkrKAuTZZZcZEEc36ijB';   // ←←← 这里改成你的真实 API Key
+        let mailboxId = '';                  // Vmail 使用 mailbox id
+        let refreshInterval = null;
+        let emailCache = [];
+        let currentEmailId = '';
+        let currentPage = 1;
+
+        // DOM 元素（保持原样）
+        const emailDisplay = document.getElementById('email-address');
+        const accountInfo = document.getElementById('account-info');
+        const generateBtn = document.getElementById('generate-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const deleteAccountBtn = document.getElementById('delete-account-btn');
+        const clearStorageBtn = document.getElementById('clear-storage-btn');
+        const emailList = document.getElementById('email-list');
+        const emailCount = document.getElementById('email-count');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.getElementById('status-dot');
+        const emailDetail = document.getElementById('email-detail');
+        // ... 其他元素保持原样
+
+        const baseUrl = 'https://vmail.dev/api/v1';
+
+        async function fetchWithRetry(url, options = {}, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const res = await fetch(url, options);
+                    if (res.status === 429) {
+                        await new Promise(r => setTimeout(r, 2000));
+                        continue;
+                    }
+                    return res;
+                } catch (e) {
+                    if (i === retries - 1) throw e;
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+        }
+
+        // 生成新邮箱（Vmail 方式）
+        async function generateRandomEmail() {
+            if (!apiKey || apiKey === 'YOUR_VMAIL_API_KEY') {
+                showError('请先在代码中设置你的 Vmail API Key');
+                return;
+            }
+            showLoader(true);
+            try {
+                const res = await fetchWithRetry(`${baseUrl}/mailboxes`, {
+                    method: 'POST',
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})   // 可选指定 domain: "vmail.dev"
+                });
+
+                if (!res.ok) throw new Error(`创建失败 ${res.status}`);
+
+                const data = await res.json();
+                currentEmail = data.data?.address || data.address;
+                mailboxId = data.data?.id || data.id;
+
+                emailDisplay.textContent = currentEmail;
+                deleteAccountBtn.style.display = 'block';
+                clearStorageBtn.style.display = 'block';
+
+                saveToStorage();
+                startEmailCheck();
+                showSuccess('邮箱生成成功！（Vmail.dev）');
+            } catch (error) {
+                showError(`生成失败: ${error.message}`);
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        async function checkEmails() {
+            if (!mailboxId || !apiKey) return;
+            updateStatus('正在检查邮件...', 'loading');
+            try {
+                const res = await fetchWithRetry(`${baseUrl}/mailboxes/${mailboxId}/messages`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                if (!res.ok) throw new Error('获取邮件失败');
+
+                const data = await res.json();
+                const newEmails = data.data || data.messages || [];
+
+                emailCache = newEmails;
+                emailCount.textContent = newEmails.length;
+
+                if (newEmails.length > 0) {
+                    renderEmailList(newEmails);
+                    updateStatus(`找到 ${newEmails.length} 封邮件`, 'success');
+                } else {
+                    showEmptyInbox();
+                    updateStatus('收件箱为空', 'success');
+                }
+            } catch (error) {
+                updateStatus('获取邮件失败', 'error');
+                showError(error.message);
+            }
+        }
+
+        function startEmailCheck() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            checkEmails();
+            refreshInterval = setInterval(checkEmails, 15000);   // 15秒轮询一次
+        }
+
+        // 查看邮件详情（根据 Vmail 实际返回字段调整）
+        async function viewEmailDetails(emailId) {
+            currentEmailId = emailId;
+            try {
+                const res = await fetchWithRetry(`${baseUrl}/mailboxes/${mailboxId}/messages/${emailId}`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                const email = await res.json();
+
+                // 根据 Vmail 返回字段填充详情（可能需要微调）
+                document.getElementById('detail-subject').textContent = email.subject || '无主题';
+                // ... 其他字段类似填充 sender、body 等
+
+                emailDetail.style.display = 'block';
+            } catch (e) {
+                showError('加载邮件详情失败');
+            }
+        }
+
+        // 其他函数（copy、clearStorage、formatTime、renderEmailList 等）保持你原来的逻辑，只需微调数据字段即可
+
+        // 初始化
+        loadFromStorage();   // 如果你想保留本地存储功能
+
+        generateBtn.addEventListener('click', generateRandomEmail);
+        copyBtn.addEventListener('click', () => {
+            if (currentEmail) navigator.clipboard.writeText(currentEmail).then(() => showSuccess('已复制'));
+        });
+        refreshBtn.addEventListener('click', checkEmails);
+        // 其他按钮事件保持原样
+    </script>
+</body>
+</html>
