@@ -8,122 +8,120 @@
     <style>
         :root {
             --primary: #6c5ce7;
-            --light: #f5f6fa;
-            --dark: #2d3436;
         }
+        /* 浅色模式（白天） */
+        body.light {
+            --bg-start: #f0f4f8;
+            --bg-end: #c3cfe2;
+            --card-bg: rgba(255,255,255,0.98);
+            --text-color: #2d3436;
+            --light-bg: #f8f9fc;
+        }
+        /* 深色模式（黑夜） */
+        body.dark {
+            --bg-start: #1e1e2e;
+            --bg-end: #2a2a40;
+            --card-bg: rgba(255,255,255,0.96);
+            --text-color: #2d3436;
+            --light-bg: #f8f9fc;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
-        
+       
         body {
-            background: linear-gradient(135deg, #1e1e2e 0%, #2a2a40 100%);
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            color: white;
+            color: var(--text-color);
             position: relative;
+            transition: background 0.6s ease;
         }
 
-        /* 右上角圆角方块图标 */
+        /* 右上角圆角方块图标区域 */
         .top-right-icons {
             position: absolute;
             top: 25px;
             right: 25px;
             display: flex;
-            gap: 12px;
+            gap: 14px;
             z-index: 100;
         }
         .icon-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(103, 232, 249, 0.4);
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(103, 232, 249, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             color: #67e8f9;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(103, 232, 249, 0.4);
+            transition: all 0.35s ease;
+            box-shadow: 0 0 18px rgba(103, 232, 249, 0.45);
         }
         .icon-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 25px rgba(103, 232, 249, 0.7);
-            background: rgba(103, 232, 249, 0.15);
+            transform: scale(1.12);
+            box-shadow: 0 0 28px rgba(103, 232, 249, 0.75);
+            background: rgba(103, 232, 249, 0.2);
         }
 
-        /* Telegram 蓝色风格 */
-        .icon-btn.telegram {
-            border-color: #60a5fa;
-            color: #60a5fa;
-            box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
-        }
-        .icon-btn.telegram:hover {
-            box-shadow: 0 0 25px rgba(96, 165, 250, 0.8);
-        }
-
-        /* GitHub 风格 */
-        .icon-btn.github {
-            border-color: #9ca3af;
-            color: #d1d5db;
-            box-shadow: 0 0 15px rgba(156, 163, 175, 0.4);
-        }
-        .icon-btn.github:hover {
-            border-color: #f3f4f6;
-            color: white;
-            box-shadow: 0 0 25px rgba(209, 213, 219, 0.6);
-        }
+        .icon-btn.telegram { border-color: #60a5fa; color: #60a5fa; }
+        .icon-btn.github { border-color: #9ca3af; color: #d1d5db; }
+        .icon-btn.theme-toggle { border-color: #fbbf24; color: #fbbf24; font-size: 1.5rem; }
 
         .container { width: 100%; max-width: 620px; }
         .card {
-            background: rgba(255,255,255,0.95);
-            color: #2d3436;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            background: var(--card-bg);
+            color: var(--text-color);
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
             overflow: hidden;
         }
         .header {
             background: linear-gradient(135deg, #6c5ce7, #a29bfe);
             color: white;
-            padding: 22px;
+            padding: 24px;
             text-align: center;
         }
-        .header h1 { font-size: 1.55rem; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        
+        .header h1 { font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 12px; }
+       
         .content { padding: 25px; }
         .email-section, .inbox-section {
-            background: #f8f9fc;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--light-bg);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 22px;
         }
         .email-display {
-            font-size: 1.15rem;
+            font-size: 1.18rem;
             background: white;
-            padding: 14px;
-            border-radius: 10px;
+            padding: 16px;
+            border-radius: 12px;
             text-align: center;
             border: 1px solid #e0e0e0;
             word-break: break-all;
-            min-height: 54px;
+            min-height: 58px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .actions { 
-            display: flex; 
-            gap: 10px; 
-            justify-content: center; 
-            flex-wrap: wrap; 
-            margin-top: 18px; 
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
         .btn {
-            padding: 11px 22px;
-            border-radius: 10px;
-            font-size: 0.95rem;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.96rem;
             font-weight: 500;
             border: none;
             cursor: pointer;
@@ -131,39 +129,41 @@
         }
         .btn-primary { background: #6c5ce7; color: white; }
         .btn-secondary { background: #00cec9; color: white; }
-        .btn-refresh { background: #fdcb6e; color: white; }
         .btn-delete { background: #e74c3c; color: white; }
 
-        .email-list { max-height: 320px; overflow-y: auto; }
-        .empty-inbox { text-align: center; padding: 50px 20px; color: #888; }
+        .email-list { max-height: 340px; overflow-y: auto; }
+        .empty-inbox { text-align: center; padding: 55px 20px; color: #888; }
         .status-bar {
             display: flex; align-items: center; gap: 10px;
-            padding: 12px; background: #f0efff; border-radius: 10px; margin-top: 15px;
+            padding: 14px; background: #f0efff; border-radius: 12px; margin-top: 16px;
         }
         .status-dot {
-            width: 12px; height: 12px; border-radius: 50%; background: #00b894;
+            width: 13px; height: 13px; border-radius: 50%; background: #00b894;
         }
-        .status-dot.loading { background: #fdcb6e; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.5} }
-        
+        .status-dot.loading { background: #fdcb6e; animation: pulse 1.6s infinite; }
+        @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:0.4} }
+       
         .error-message, .success-message {
-            padding: 12px; border-radius: 8px; margin-top: 12px; text-align: center; font-size: 0.9rem;
+            padding: 13px; border-radius: 10px; margin-top: 14px; text-align: center; font-size: 0.92rem;
         }
         .error-message { background: #fee; color: #e74c3c; }
         .success-message { background: #e6f7e6; color: #00b894; }
     </style>
 </head>
-<body>
-    <!-- 右上角三个圆角方块图标 -->
+<body class="dark">   <!-- 默认深色模式，你可以改成 light -->
+    <!-- 右上角四个图标 -->
     <div class="top-right-icons">
         <div class="icon-btn" id="refresh-icon" title="手动刷新">
             <i class="fas fa-sync-alt"></i>
         </div>
-        <div class="icon-btn telegram" id="telegram-icon" title="联系我 (Telegram)">
+        <div class="icon-btn telegram" id="telegram-icon" title="Telegram 联系我">
             <i class="fab fa-telegram-plane"></i>
         </div>
         <div class="icon-btn github" id="github-icon" title="GitHub">
             <i class="fab fa-github"></i>
+        </div>
+        <div class="icon-btn theme-toggle" id="theme-toggle" title="切换主题">
+            <i class="fas fa-sun"></i>
         </div>
     </div>
 
@@ -194,8 +194,8 @@
                 </div>
 
                 <div class="inbox-section">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                        <div style="font-size:1.25rem;font-weight:600;color:#2d3436;">收件箱 
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <div style="font-size:1.25rem;font-weight:600;color:#2d3436;">收件箱
                             <span id="email-count" style="background:#6c5ce7;color:white;padding:3px 11px;border-radius:999px;font-size:0.82rem;">0</span>
                         </div>
                     </div>
@@ -219,14 +219,15 @@
     </div>
 
     <script>
-        // ==================== 请在这里修改 ====================
-        const API_KEY = 'vmail_0T6OOdjA6VhmYkrKAuTZZZcZEEc36ijB';   // ←←← 改成你的 Vmail API Key
+        // ==================== 配置区 ====================
+        const API_KEY = 'vmail_0T6OOdjA6VhmYkrKAuTZZZcZEEc36ijB';   // 你的 API Key
 
         let currentEmail = '';
         let mailboxId = '';
         let refreshInterval = null;
         let emailCache = [];
 
+        // DOM 元素
         const emailDisplay = document.getElementById('email-address');
         const generateBtn = document.getElementById('generate-btn');
         const copyBtn = document.getElementById('copy-btn');
@@ -237,9 +238,40 @@
         const statusDot = document.getElementById('status-dot');
         const emailError = document.getElementById('email-error');
         const emailSuccess = document.getElementById('email-success');
+        const themeToggle = document.getElementById('theme-toggle');
 
         const baseUrl = 'https://vmail.dev/api/v1';
 
+        // ====================== 主题切换 ======================
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('light')) {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // 加载保存的主题
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const body = document.body;
+            if (savedTheme === 'light') {
+                body.classList.add('light');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            } else {
+                body.classList.add('dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        // ====================== 邮件功能 ======================
         function updateStatus(msg, type = '') {
             statusText.textContent = msg;
             statusDot.className = 'status-dot';
@@ -259,15 +291,14 @@
         }
 
         async function generateRandomEmail() {
-            if (!API_KEY || API_KEY.includes('你的真实')) {
-                showError('请先替换代码中的 API_KEY 为你的真实 Vmail Key');
-                return;
-            }
-            updateStatus('正在生成...', 'loading');
+            updateStatus('正在生成邮箱...', 'loading');
             try {
                 const res = await fetch(`${baseUrl}/mailboxes`, {
                     method: 'POST',
-                    headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
+                    headers: { 
+                        'X-API-Key': API_KEY, 
+                        'Content-Type': 'application/json' 
+                    },
                     body: JSON.stringify({})
                 });
                 if (!res.ok) throw new Error('创建失败');
@@ -297,11 +328,13 @@
                 emailCount.textContent = emailCache.length;
 
                 if (emailCache.length === 0) {
-                    emailList.innerHTML = `<div class="empty-inbox"><i class="fas fa-inbox" style="font-size:3rem;color:#ddd;"></i><p>收件箱为空</p></div>`;
+                    emailList.innerHTML = `<div class="empty-inbox"><i class="fas fa-inbox" style="font-size:3rem;color:#ddd;margin-bottom:15px;"></i><p>收件箱为空</p></div>`;
                 } else {
                     renderEmailList();
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error(e);
+            }
             updateStatus('就绪');
         }
 
@@ -319,28 +352,26 @@
             refreshInterval = setInterval(checkEmails, 15000);
         }
 
-        // 按钮事件
+        // ====================== 事件绑定 ======================
         generateBtn.addEventListener('click', generateRandomEmail);
         copyBtn.addEventListener('click', () => {
             if (currentEmail) navigator.clipboard.writeText(currentEmail).then(() => showSuccess('已复制'));
         });
         clearBtn.addEventListener('click', () => location.reload());
-
-        // 右上角图标点击
         document.getElementById('refresh-icon').addEventListener('click', checkEmails);
 
         document.getElementById('telegram-icon').addEventListener('click', () => {
-            // 这里改成你的 Telegram 链接（推荐）
-            window.open('https://t.me/icc469', '_blank');   // ←←← 请把“你的用户名”改成你的 Telegram
-            // 或者使用 alert：
-            // alert('欢迎通过 Telegram 联系我！\n\n我的 Telegram: @icc469');
+            window.open('https://t.me/icc469', '_blank');
         });
 
         document.getElementById('github-icon').addEventListener('click', () => {
-            window.open('https://github.com/aqiu301', '_blank');   // ←←← 改成你的 GitHub 地址
+            window.open('https://github.com/aqiu301', '_blank');
         });
 
+        themeToggle.addEventListener('click', toggleTheme);
+
         // 初始化
+        loadTheme();
         updateStatus('准备就绪');
     </script>
 </body>
